@@ -13,6 +13,7 @@ export default class List {
 			id: uniqid()
 		};
 		this.items.push(item);
+		return item;
 	}
 	
 	deleteItem(id) {
@@ -21,6 +22,6 @@ export default class List {
 	}
 	
 	updateCount(id, newCount) {
-	
+		this.items.find(el => el.id === id).count = newCount
 	}
 }
