@@ -1,9 +1,11 @@
 import Search from './modules/Search';
 import Recipe from './modules/Recipe';
 import List from './modules/List';
+import Likes from './modules/Likes';
 import * as searchView from './views/searchView';
 import * as recipeView from './views/recipeView';
 import * as listView from './views/listView';
+import * as likesView from './views/likesVliew';
 import { elements, renderLoader, clearLoader } from './views/base'
 
 /*
@@ -16,7 +18,7 @@ const state = {};
 
 const controlSearch = async () => {
 	const query = searchView.getInput();
-	console.log(query);
+	
 	if (query) {
 		state.search = new Search(query);
 
@@ -69,7 +71,8 @@ const controlRecipe = async () => {
 			
 			clearLoader();
 			
-			recipeView.renderRecipe(state.recipe);
+			recipeView.renderRecipe(state.recipe, state.likes.isLiked(id));
+			
 		} catch (error) {
 			console.log(error);
 		}
@@ -77,8 +80,19 @@ const controlRecipe = async () => {
 	
 };
 
-window.addEventListener('hashchange', controlRecipe);
-// window.addEventListener('load', controlRecipe);
+['hashchange', 'load'].forEach(event => window.addEventListener(event, controlRecipe));
+window.addEventListener('load', () => {
+	state.likes = new Likes();
+	
+	// Restore likes
+	state.likes.readStorage();
+	//
+	// // Toggle like menu button
+	likesView.toggleLikeMenu(state.likes.getNumLikes());
+	//
+	// // Render the existing likes
+	state.likes.likes.forEach(like => likesView.renderLike(like));
+});
 
 const controlList = () => {
 	if (!state.list) state.list = new List();
@@ -87,6 +101,32 @@ const controlList = () => {
 		const item = state.list.addItem(el.count, el.unit, el.ingredient);
 		listView.renderItem(item);
 	})
+};
+
+
+const controlLike = () => {
+	if (!state.likes) state.likes = new Likes();
+	const currentID = state.recipe.id;
+	
+	if (!state.likes.isLiked(currentID)) {
+		
+		const newLike = state.likes.addLike(
+			currentID,
+			state.recipe.title,
+			state.recipe.author,
+			state.recipe.img
+		);
+		
+		likesView.toggleLikeBtn(true);
+		likesView.renderLike(newLike);
+	} else {
+		state.likes.deleteLike(currentID);
+		
+		likesView.toggleLikeBtn(false);
+		
+		likesView.deleteLike(currentID);
+	}
+	likesView.toggleLikeMenu(state.likes.getNumLikes());
 };
 
 elements.shopping.addEventListener('click', e => {

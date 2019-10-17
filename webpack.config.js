@@ -18,7 +18,7 @@ module.exports = {
 		}),
 		new webpack.SourceMapDevToolPlugin({})
 	],
-	devtool: 'source-map',
+	devtool: 'inline-source-map',
 	module: {
 		rules: [
 			{
